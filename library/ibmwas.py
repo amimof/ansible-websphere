@@ -11,6 +11,52 @@
 # -sharedResourcesDirectory $IM_SHARED_INSTALL_DIR
 # -acceptLicense -showProgress
 
+DOCUMENTATION = """
+module: ibmwas
+version_added: "1.9.4"
+short_description: Install/Uninstall WebSphere Application Server
+description:
+  - Install/Uninstall WebSphere Application Server using Installation Manager
+options:
+  ibmim:
+    required: true
+    description:
+      - Path to installation directory of Installation Manager
+  dest:
+    required: true
+    description:
+      - Path to destination installation directory
+  im_shared:
+    required: true
+    description:
+      - Path to Installation Manager shared resources folder
+  repo:
+    required: true
+    description:
+      - URL or path to the installation repository used by Installation Manager to install WebSphere products
+  offering:
+    required: true
+    description:
+      - Name of the offering which you want to install
+  state:
+    required: false
+    choices: [ present, absent ]
+    default: "present"
+    description:
+      - Whether WAS should be installed or removed
+notes:
+  - IBM Installation Manager is required to install WebSphere products using this module
+  - Assumes access to installation files on remote server or local directory
+author: "Amir Mofasser (@amofasser)"
+"""
+
+EXAMPLES = """
+# Install:
+- ibmwas: state=present ibmim=/opt/IBM/InstallationManager/ dest=/usr/local/WebSphere/AppServer im_shared=/usr/local/WebSphere/IMShared repo=http://example.com/was-repo/ offering=com.ibm.websphere.ND.v85
+# Uninstall:
+- ibmwas: state=absent ibmim=/opt/IBM/InstallationManager dest=/usr/local/WebSphere/AppServer/
+"""
+
 import os
 import subprocess
 import platform
