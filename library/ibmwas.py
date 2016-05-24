@@ -19,16 +19,6 @@ import shutil
 
 def main():
 
-    # WAS offerings
-    offerings = [
-        'com.ibm.websphere.ND.v85',
-        'com.ibm.websphere.IHS.v85',
-        'com.ibm.websphere.PLG.v85',
-        'com.ibm.websphere.WCT.v85',
-        'com.ibm.websphere.liberty.IBMJAVA.v70',
-        'com.ibm.websphere.liberty.v85'
-    ]
-
     # Read arguments
     module = AnsibleModule(
         argument_spec = dict(
@@ -37,7 +27,7 @@ def main():
             dest      = dict(required=True),
             im_shared = dict(required=False),
             repo      = dict(required=False),
-            offering  = dict(default='com.ibm.websphere.ND.v85', choices=offerings),
+            offering  = dict(required=True),
             ihs_port  = dict(default=8080),
             logdir    = dict(required=False)
         )
