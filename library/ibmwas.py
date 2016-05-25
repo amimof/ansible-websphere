@@ -106,7 +106,7 @@ def getVersion(dest):
 
     # Check if dest is was or liberty
     if os.path.isfile("{0}/bin/versionInfo.sh".format(dest)):
-	versioncmd = "versionInfo.cmd"
+	versioncmd = "versionInfo.sh"
 	wasversion = "was"
     if os.path.isfile("{0}/bin/productInfo".format(dest)):
 	versioncmd = "productInfo version"
@@ -243,11 +243,13 @@ def main():
                 stderr=subprocess.PIPE
             )
             stdout_value, stderr_value = child.communicate()
-            module.fail_json(msg="WebSphere Application Server uninstall failed", stdout=stdout_value, stderr=stderr_value)
+            if child.returncode != 0:
+                module.fail_json(msg="WebSphere Application Server uninstall failed", stdout=stdout_value, stderr=stderr_value)
 
             # Remove AppServer dir forcefully so that it doesn't prevents us from reinstalling.
             shutil.rmtree(dest, ignore_errors=False, onerror=None)
-            module.exit_json(changed=True, msg="WebSphere Application Server uninstalled successfully", stdout=stdout_value)
+            module.exit_json(changed=True, msg="WebSphere Application Server uninstalled successfully", stdout=stdout_value, stderr=stderr_value)
+
         else:
             module.exit_json(changed=False, msg="WebSPhere Application Server is not installed")
 
