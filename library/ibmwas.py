@@ -20,6 +20,7 @@ description:
 options:
   ibmim:
     required: true
+    default: '/opt/IBM/InstallationManager'
     description:
       - Path to installation directory of Installation Manager
   dest:
@@ -27,11 +28,16 @@ options:
     description:
       - Path to destination installation directory
   im_shared:
-    required: true
+    required: false
     description:
       - Path to Installation Manager shared resources folder
+  ihs_port:
+    required: false
+    default: 8080
+    description:
+      - IHS default listening port. Only applicable when installing IBM HTTP Server
   repo:
-    required: true
+    required: false
     description:
       - URL or path to the installation repository used by Installation Manager to install WebSphere products
   offering:
@@ -52,7 +58,7 @@ author: "Amir Mofasser (@amofasser)"
 
 EXAMPLES = """
 # Install:
-- ibmwas: state=present ibmim=/opt/IBM/InstallationManager/ dest=/usr/local/WebSphere/AppServer im_shared=/usr/local/WebSphere/IMShared repo=http://example.com/was-repo/ offering=com.ibm.websphere.ND.v85
+- ibmwas: state=present ibmim=/opt/IBM/InstallationManager/ dest=/usr/local/WebSphere/AppServer repo=http://example.com/was-repo/ offering=com.ibm.websphere.ND.v85
 # Uninstall:
 - ibmwas: state=absent ibmim=/opt/IBM/InstallationManager dest=/usr/local/WebSphere/AppServer/
 """
@@ -62,20 +68,91 @@ import subprocess
 import platform
 import datetime
 import shutil
+import re
+
+was_dict = dict(
+    was_name = None,
+    was_version = None,
+    was_id = None,
+    was_arch = None,
+    was_installed = False,
+    check_stdout = None,
+    check_stderr = None
+)
+
+def getItem(str):
+    return was_dict[str]
+
+def isProvisioned(dest):
+    """
+    Checks if WebSphere Application Server is already installed at dest
+    :param dest: Installation directory of WAS
+    :return: True if already provisioned. False if not provisioned
+    """
+    # If destination dir does not exists then its safe to assume that IM is not installed
+    if not os.path.exists(dest):
+        return False
+    return getVersion(dest)["was_installed"]
+
+def getVersion(dest):
+    """
+    Runs versionInfo.sh and stores the output in a dict
+    :param dest: Installation directory of WAS
+    :return: dict
+    """
+
+    versioncmd = None
+    wasversion = None
+
+    # Check if dest is was or liberty
+    if os.path.isfile("{0}/bin/versionInfo.sh".format(dest)):
+	versioncmd = "versionInfo.cmd"
+	wasversion = "was"
+    if os.path.isfile("{0}/bin/productInfo".format(dest)):
+	versioncmd = "productInfo version"
+	wasversion = "liberty"
+
+    child = subprocess.Popen(
+        ["{0}/bin/{1}".format(dest, versioncmd)],
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+    stdout_value, stderr_value = child.communicate()
+
+    was_dict["check_stdout"] = stdout_value
+    was_dict["check_stderr"] = stderr_value
+
+    try:
+	if wasversion == "was":
+            was_dict["was_name"] = re.search("(Name\s*)(.*[a-z]|[A-Z].*)", stdout_value).group(2)
+            was_dict["was_version"] = re.search("(Version\s*)(.*[0-9].[0-9].[0-9].[0-9].*)", stdout_value).group(2)
+            was_dict["was_id"] = re.search("(ID\s*)(.*[a-z]|[A-Z].*)", stdout_value).group(2)
+	    was_dict["was_arch"] = re.search("(Architecture\s*)(.*)", stdout_value).group(2)
+            was_dict["was_installed"] = True
+	if wasversion == "liberty":
+	    was_dict["was_name"] = re.search("(Product name:.)(.*[a-z]|[A-Z]*)", stdout_value).group(2)
+	    was_dict["was_version"] = re.search("(Product version:.*)(.*[0-9].[0-9].[0-9].[0-9].*)", stdout_value).group(2)
+	    was_dict["was_id"] = re.search("(Product edition:.)(.*[a-z]|[A-Z]*)", stdout_value).group(2)
+	    was_dict["was_installed"] = True
+    except AttributeError:
+        raise
+
+    return was_dict
+
 
 def main():
 
     # Read arguments
     module = AnsibleModule(
         argument_spec = dict(
-            state     = dict(default='present', choices=['present', 'abcent']),
-            ibmim     = dict(required=True),
+            state     = dict(default='present', choices=['present', 'absent']),
+            ibmim     = dict(default='/opt/IBM/InstallationManager'),
             dest      = dict(required=True),
             im_shared = dict(required=False),
             repo      = dict(required=False),
             offering  = dict(required=True),
-            ihs_port  = dict(default=8080),
-            logdir    = dict(required=False)
+            ihs_port  = dict(default=8080)
         )
     )
 
@@ -89,34 +166,84 @@ def main():
     logdir = module.params['logdir']
 
     # Check if paths are valid
-    if not os.path.exists(ibmim+"/eclipse"):
-        module.fail_json(msg=ibmim+"/eclipse not found")
-
-    # Installation
+    if not os.path.exists("{0}/eclipse".format(ibmim)):
+        module.fail_json(msg="{0}/eclipse not found. Make sure IBM Installation Manager is installed and that ibmim is pointing to correct directory.".format(ibmim))
+    
+    # Install
     if state == 'present':
-        child = subprocess.Popen([ibmim+"/eclipse/tools/imcl install " + offering + " -repositories " + repo + " -installationDirectory " + dest + " -sharedResourcesDirectory " + im_shared + " -acceptLicense -showProgress -properties user.ihs.httpPort=" + str(ihs_port)], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout_value, stderr_value = child.communicate()
-        if child.returncode != 0:
-            module.fail_json(msg="WAS ND install failed", stdout=stdout_value, stderr=stderr_value)
+        
+        # Check wether was is already installed
+        if not isProvisioned(dest):
 
-        module.exit_json(changed=True, msg="WAS ND installed successfully", stdout=stdout_value)
+            child = subprocess.Popen(
+                ["{0}/eclipse/tools/imcl install {1} "
+                 "-repositories {2} "
+                 "-installationDirectory {3} " 
+                 "-sharedResourcesDirectory {4} "
+                 "-properties user.ihs.httpPort={5} "
+                 "-showProgress "
+                 "-acceptLicense "
+                 "-stopBlockingProcesses".format(ibmim, offering, repo, dest, im_shared, str(ihs_port))], 
+                shell=True, 
+                stdout=subprocess.PIPE, 
+                stderr=subprocess.PIPE
+            )
+            stdout_value, stderr_value = child.communicate()
+            if child.returncode != 0:
+                module.fail_json(
+                    changed=False, 
+                    msg="WebSphere Application Server installation failed", 
+                    stdout=stdout_value, 
+                    stderr=stderr_value
+                )
+
+            # After install, get versionInfo so that we can show it to the user
+            getVersion(dest)
+            module.exit_json(
+                changed=True, 
+                msg="WAS ND installed successfully", 
+                stdout=stdout_value, 
+                stderr=stderr_value,
+                was_name=getItem("was_name"), 
+                was_version=getItem("was_version"), 
+                was_id=getItem("was_id"), 
+                was_arch=getItem("was_arch"), 
+                was_installed=getItem("was_installed")
+            )
+        else:
+            module.exit_json(
+                changed=False, 
+                msg="WebSphere Application Server is already installed", 
+                stdout=getItem("check_stdout"),
+                stderr=getItem("check_stderr"),
+                was_name=getItem("was_name"), 
+                was_version=getItem("was_version"), 
+                was_id=getItem("was_id"), 
+                was_arch=getItem("was_arch"), 
+                was_installed=getItem("was_installed")
+            )
 
     # Uninstall
-    if state == 'abcent':
-        if not os.path.exists(logdir):
-            if not os.listdir(logdir):
-                os.makedirs(logdir)
-        logfile = platform.node() + "_wasnd_" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + ".xml"
-        child = subprocess.Popen([ibmim+"/eclipse/IBMIM --launcher.ini " + ibmim + "/eclipse/silent-install.ini -input " + dest + "/uninstall/uninstall.xml -log " + logdir+"/"+logfile], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout_value, stderr_value = child.communicate()
-        if child.returncode != 0:
-            module.fail_json(msg="WAS ND uninstall failed", stdout=stdout_value, stderr=stderr_value)
+    if state == 'absent':
 
-        # Remove AppServer dir forcefully so that it doesn't prevents us from
-        # reinstalling.
-        shutil.rmtree(dest, ignore_errors=False, onerror=None)
+        # Check wether was is installed
+        if isProvisioned(dest):
+            
+            child = subprocess.Popen(
+                ["{0}/eclipse/tools/imcl uninstall {1} "
+                 "-installationDirectory {2}".format(ibmim, offering, dest)], 
+                shell=True, 
+                stdout=subprocess.PIPE, 
+                stderr=subprocess.PIPE
+            )
+            stdout_value, stderr_value = child.communicate()
+            module.fail_json(msg="WebSphere Application Server uninstall failed", stdout=stdout_value, stderr=stderr_value)
 
-        module.exit_json(changed=True, msg="WAS ND uninstalled successfully", stdout=stdout_value)
+            # Remove AppServer dir forcefully so that it doesn't prevents us from reinstalling.
+            shutil.rmtree(dest, ignore_errors=False, onerror=None)
+            module.exit_json(changed=True, msg="WebSphere Application Server uninstalled successfully", stdout=stdout_value)
+        else:
+            module.exit_json(changed=False, msg="WebSPhere Application Server is not installed")
 
 # import module snippets
 from ansible.module_utils.basic import *
