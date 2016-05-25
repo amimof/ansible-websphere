@@ -19,10 +19,10 @@ This module installs or uninstalls IBM Installation Manager.
 #### Options
 | Parameter | Required | Default | Choices | Comments |
 |:---------|:--------|:---------|:---------|:---------|
-| state | false | N/A | present, absent | present=install, absent=uninstall |
+| state | false | present | present, absent | present=install, absent=uninstall |
 | src | false | N/A | N/A | Path to installation files for Installation Manager |
-| dest | false | N/A | /opt/IBM/InstallationManager | Path to desired installation directory of Installation Manager |
-| logdir | false | N/A | /tmp | Path and file name of installation log file |
+| dest | false | /opt/IBM/InstallationManager | N/A | Path to desired installation directory of Installation Manager |
+| logdir | false | N/A | /tmp | Directory to save installation log file |
 #### Example
 ```
 # Install:
