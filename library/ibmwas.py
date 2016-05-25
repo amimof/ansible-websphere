@@ -153,7 +153,8 @@ def main():
             repo      = dict(required=False),
             offering  = dict(required=True),
             ihs_port  = dict(default=8080)
-        )
+        ),
+        supports_check_mode = True
     )
 
     state = module.params['state']
@@ -163,7 +164,6 @@ def main():
     repo = module.params['repo']
     ihs_port = module.params['ihs_port']
     offering = module.params['offering']
-    logdir = module.params['logdir']
 
     # Check if paths are valid
     if not os.path.exists("{0}/eclipse".format(ibmim)):
@@ -172,6 +172,9 @@ def main():
     # Install
     if state == 'present':
         
+        if module.check_mode:
+            module.exit_json(changed=False, msg="WebSphere Application Server is to be installed at {0}".format(dest))
+
         # Check wether was is already installed
         if not isProvisioned(dest):
 
@@ -225,6 +228,9 @@ def main():
 
     # Uninstall
     if state == 'absent':
+
+        if module.check_mode:
+            module.exit_json(changed=False, msg="WebSphere Application Server is to be uninstalled from {0}".format(dest))
 
         # Check wether was is installed
         if isProvisioned(dest):

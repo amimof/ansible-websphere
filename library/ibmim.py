@@ -14,7 +14,7 @@ description:
   - Install/Uninstall IBM Installation Manager
 options:
   src:
-    required: true
+    required: false
     description:
       - Path to installation files for Installation Manager
   dest:
@@ -103,7 +103,7 @@ def main():
     module = AnsibleModule(
         argument_spec = dict(
             state   = dict(default='present', choices=['present', 'absent']),
-            src     = dict(required=True),
+            src     = dict(required=False),
             dest    = dict(default="/opt/IBM/InstallationManager/"),
             logdir  = dict(default="/tmp/")
         ),

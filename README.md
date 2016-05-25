@@ -19,14 +19,14 @@ This module installs or uninstalls IBM Installation Manager.
 #### Options
 | Parameter | Required | Default | Choices | Comments |
 |:---------|:--------|:---------|:---------|:---------|
-| state | true | N/A | present, absent | present=install, absent=uninstall |
-| src | true | N/A | N/A | Path to installation files for Installation Manager |
+| state | false | N/A | present, absent | present=install, absent=uninstall |
+| src | false | N/A | N/A | Path to installation files for Installation Manager |
 | dest | false | N/A | /opt/IBM/InstallationManager | Path to desired installation directory of Installation Manager |
-| logdir | false | N/A | N/A | Path and file name of installation log file |
+| logdir | false | N/A | /tmp | Path and file name of installation log file |
 #### Example
 ```
 # Install:
-ibmim: state=present src=/some/dir/install/ logdir=/tmp/im_install.log
+ibmim: state=present src=/some/dir/install/
 # Uninstall
 ibmim: state=absent dest=/opt/IBM/InstallationManager
 ```
@@ -36,12 +36,12 @@ This module installs or uninstalls IBM WebSphere products using Installation Man
 #### Options
 | Parameter | Required | Default | Choices | Comments |
 |:---------|:--------|:---------|:---------|:---------|
-| state | true | present | present, absent | present=install,absent=uninstall |
-| ibmim | true | N/A | N/A | Path to installation directory of Installation Manager |
+| state | false | present | present, absent | present=install,absent=uninstall |
+| ibmim | false | /opt/IBM/InstallationManager | N/A | Path to installation directory of Installation Manager |
 | dest | true | N/A | N/A | Path to destination installation directory |
-| im_shared | true | N/A | N/A | Path to Installation Manager shared resources folder |
-| repo | true | N/A | N/A | URL or path to the installation repository used by Installation Manager to install WebSphere products |
-| offering | true | com.ibm.websphere.ND.v85 | N/A | Name of the offering which you want to install |
+| im_shared | false | N/A | N/A | Path to Installation Manager shared resources folder |
+| repo | false | N/A | N/A | URL or path to the installation repository used by Installation Manager to install WebSphere products |
+| offering | true | N/A | N/A | Name of the offering which you want to install |
 #### Example
 ```
 # Install:
