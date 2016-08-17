@@ -3,30 +3,97 @@
 #
 # Author: Amir Mofasser <amir.mofasser@gmail.com>
 #
-# This is an Ansible module. Creates a WAS Deployment Manager profile
+# This is an Ansible module.
 #
-# $WAS_INSTALL_DIR/bin/manageprofiles.sh -create
-# -profileName $name
-# -profilePath $WAS_INSTALL_DIR/profiles/$name
-# -templatePath $WAS_INSTALL_DIR/profileTemplates/management
-# -cellName $CELL_NAME
-# -hostName $HOST_NAME
-# -nodeName $NODE_NAME
-# -enableAdminSecurity true
-# -adminUserName $ADMIN_USER
-# -adminPassword $ADMIN_PASS
+
+DOCUMENTATION = """
+module: profile_dmgr
+version_added: "1.9.4"
+short_description: Manage a WebSphere Application Server profile
+description:
+  - Manage a WebSphere Application Server profile
+options:
+  state:
+    required: false
+    choices: [ present, absent ]
+    default: "present"
+    description:
+      - The profile should be created or removed
+  name:
+    required: true
+    description:
+      - Name of the profile
+  wasdir:
+    required: true
+    description:
+      - Path to installation folder of WAS
+  cell_name:
+    required: false
+    description:
+      - Cell Name
+  host_name:
+    required: false
+    description:
+      - Deployment manager host name
+  password:
+    required: false
+    description:
+      - Deployment manager password
+  username:
+    required: false
+    description:
+      - Deployment manager username
+  state:
+    required: false
+    choices: [ present, absent ]
+    default: "present"
+    description:
+      - The profile should be created or removed
+author: "Amir Mofasser (@amofasser)"
+"""
+
+EXAMPLES = """
+# Install:
+profile_dmgr: state=present wasdir=/usr/local/WebSphere name=dmgr cell_name=mycell host_name=dmgr.domain.com node_name=mycell-dmgr username=wasadmin password=waspass
+# Uninstall
+profile_dmgr: state=absent wasdir=/usr/local/WebSphere name=dmgr
+"""
 
 import os
 import subprocess
 import platform
 import datetime
+import shutil
+
+def isProvisioned(dest, profileName): 
+    """
+    Runs manageprofiles.sh -listProfiles command nd stores the output in a dict
+    :param dest: WAS installation dir
+    :param profilesName: Profile Name
+    :return: boolean
+    """
+    if not os.path.exists(dest):
+        return False
+    else:
+        child = subprocess.Popen(
+            ["{0}/bin/manageprofiles.sh -listProfiles".format(dest)],
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        stdout_value, stderr_value = child.communicate()
+        
+        if profileName in stdout_value: 
+            return True
+    return False
+
 
 def main():
 
     # Read arguments
     module = AnsibleModule(
         argument_spec = dict(
-            state   = dict(default='present', choices=['present', 'abcent']),
+            state   = dict(default='present', choices=['present', 'absent']),
             wasdir  = dict(required=True),
             name    = dict(required=True),
             cell_name    = dict(required=False),
@@ -52,27 +119,92 @@ def main():
 
     # Create a profile
     if state == 'present':
-        child = subprocess.Popen([wasdir+"/bin/manageprofiles.sh -create -profileName " + name + " -profilePath " + wasdir+"/profiles/"+name + " -templatePath " + wasdir+"/profileTemplates/management -cellName " + cell_name + " -hostName " + host_name + " -nodeName " + node_name + " -enableAdminSecurity true -adminUserName " + username + " -adminPassword " + password], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout_value, stderr_value = child.communicate()
-        if child.returncode != 0:
-            module.fail_json(msg="Dmgr profile creation failed", stdout=stdout_value, stderr=stderr_value)
+        
+        if module.check_mode:
+            module.exit_json(
+                changed=False, 
+                msg="Profile {0} is to be created".format(name)
+            )
 
-        module.exit_json(changed=True, msg=name + " profile created successfully", stdout=stdout_value)
+        if not isProvisioned(wasdir, name):
+            child = subprocess.Popen(
+                ["{0}/bin/manageprofiles.sh -create "
+                "-profileName {1} "
+                "-profilePath {0}/profiles/{1} "
+                "-templatePath {0}/profileTemplates/management "
+                "-cellName {2} "
+                "-hostName {3} "
+                "-nodeName {4} "
+                "-enableAdminSecurity true "
+                "-adminUserName {5} "
+                "-adminPassword {6} ".format(wasdir, name, cell_name, host_name, node_name, username, password)], 
+                shell=True, 
+                stdout=subprocess.PIPE, 
+                stderr=subprocess.PIPE
+            )
+            stdout_value, stderr_value = child.communicate()
+            if child.returncode != 0:
+                module.fail_json(
+                    msg="Dmgr profile creation failed", 
+                    stdout=stdout_value, 
+                    stderr=stderr_value
+                )
+
+            module.exit_json(
+                changed=True, 
+                msg="profile {0} created successfully".format(name), 
+                stdout=stdout_value,
+                stderr=stderr_value
+            )
+        else:
+            module.exit_json(
+                changed=False,
+                msg="profile {0} already exists".format(name)
+            )
 
     # Remove a profile
-    if state == 'abcent':
-        child = subprocess.Popen([wasdir+"/bin/manageprofiles.sh -delete -profileName " + name], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout_value, stderr_value = child.communicate()
-        if child.returncode != 0:
-            # manageprofiles.sh -delete will fail if the profile does not exist.
-            # But creation of a profile with the same name will also fail if
-            # the directory is not empty. So we better remove the dir forcefully.
-            if not stdout_value.find("INSTCONFFAILED") < 0:
-                shutil.rmtree(wasdir+"/profiles/"+name, ignore_errors=False, onerror=None)
-            else:
-                module.fail_json(msg="Dmgr profile removal failed", stdout=stdout_value, stderr=stderr_value)
+    if state == 'absent':
+        
+        if module.check_mode:
+            module.exit_json(
+                changed=False, 
+                msg="Profile {0} is to be removed".format(name)
+        )
 
-        module.exit_json(changed=True, msg=name + " profile removed successfully", stdout=stdout_value, stderr=stderr_value)
+        if isProvisioned(wasdir, name):
+
+            child = subprocess.Popen(
+                ["{0}/bin/manageprofiles.sh -delete "
+                 "-profileName {1}".format(wasdir, name)],
+                 shell=True, 
+                 stdout=subprocess.PIPE, 
+                 stderr=subprocess.PIPE
+            )
+            stdout_value, stderr_value = child.communicate()
+            if child.returncode != 0:
+                # manageprofiles.sh -delete will fail if the profile does not exist.
+                # But creation of a profile with the same name will also fail if
+                # the directory is not empty. So we better remove the dir forcefully.
+                if not stdout_value.find("INSTCONFFAILED") < 0:
+                    shutil.rmtree("{0}/profiles/{1}".format(wasdir, name), ignore_errors=False, onerror=None)
+                else:
+                    module.fail_json(
+                        msg="Profile {0} removal failed".format(name), 
+                        stdout=stdout_value, 
+                        stderr=stderr_value
+                    )
+
+            module.exit_json(
+                changed=True, 
+                msg="Profile {0} removed successfully".format(name), 
+                stdout=stdout_value, 
+                stderr=stderr_value
+            )
+        else:
+            module.exit_json(
+                changed=False,
+                msg="Profile {0} does not exist".format(name)
+            )
 
 
 # import module snippets

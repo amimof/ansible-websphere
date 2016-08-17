@@ -103,32 +103,43 @@ def getVersion(dest, offering):
 
 	versioncmd = None
 	wasversion = None
+	versionpwd = None
+	installed = True
 
+	if os.path.isfile("{0}/bin/versionInfo.sh".format(dest)):
+		versioncmd = "versionInfo.sh"
+		wasversion = "was"
+		versionpwd = "{0}/bin/".format(dest)
 
 	# Build the command to execute in order to get version information
 	if "liberty".lower() in offering.lower():
 		if os.path.isfile("{0}/bin/productInfo".format(dest)):
 			versioncmd = "productInfo version"
 			wasversion = "liberty"
-	if os.path.isfile("{0}/bin/versionInfo.sh".format(dest)):
-		versioncmd = "versionInfo.sh"
-		wasversion = "was"
+			versionpwd = "{0}/bin/".format(dest)
 
 	# If offering is Java
 	if "java".lower() in offering.lower():
 		for d in os.listdir("{0}/".format(dest)):
-			if "java" in d:
-				if os.path.isfile("{0}/{1}/bin/java".format(dest, d)):
-					versioncmd = "java -version"
-					wasversion = "java"	
+			match = re.search("(java_.*)", d)
+			if match:
+				if match.group(0) in d:
+					if os.path.isfile("{0}/{1}/bin/java".format(dest, d)):
+						versioncmd = "java -version"
+						wasversion = "java"	
+						versionpwd = "{0}/{1}/bin/".format(dest, d)
 
 	child = subprocess.Popen(
-		["{0}/bin/{1}".format(dest, versioncmd)],
+		["{0}/{1}".format(versionpwd, versioncmd)],
 		shell=True,
 		stdout=subprocess.PIPE,
 		stderr=subprocess.PIPE
 	)
+
 	stdout_value, stderr_value = child.communicate()
+		
+	if child.returncode != 0:
+		installed = False
 
 	was_dict["check_stdout"] = stdout_value
 	was_dict["check_stderr"] = stderr_value
@@ -139,15 +150,16 @@ def getVersion(dest, offering):
 			was_dict["was_version"] = re.search("(Version\s*)(.*[0-9].[0-9].[0-9].[0-9].*)", stdout_value).group(2)
 			was_dict["was_id"] = re.search("(ID\s*)(.*[a-z]|[A-Z].*)", stdout_value).group(2)
 			was_dict["was_arch"] = re.search("(Architecture\s*)(.*)", stdout_value).group(2)
-			was_dict["was_installed"] = True
+			was_dict["was_installed"] = installed
 		if wasversion == "liberty":
 			was_dict["was_name"] = re.search("(Product name:.)(.*[a-z]|[A-Z]*)", stdout_value).group(2)
 			was_dict["was_version"] = re.search("(Product version:.*)(.*[0-9].[0-9].[0-9].[0-9].*)", stdout_value).group(2)
 			was_dict["was_id"] = re.search("(Product edition:.)(.*[a-z]|[A-Z]*)", stdout_value).group(2)
-			was_dict["was_installed"] = True
+			was_dict["was_installed"] = installed
 		if wasversion == "java":
 			was_dict["was_name"] = "Java SE Runtime Environment"
 			was_dict["was_version"] = stdout_value
+			was_dict["was_installed"] = installed
 	except AttributeError:
 		raise
 
