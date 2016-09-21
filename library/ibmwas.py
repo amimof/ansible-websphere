@@ -100,26 +100,25 @@ def getVersion(dest, offering):
 	:param dest: Installation directory of WAS
 	:return: dict
 	"""
-
 	versioncmd = None
 	wasversion = None
 	versionpwd = None
-	installed = True
+	installed = False
 
-	if os.path.isfile("{0}/bin/versionInfo.sh".format(dest)):
-		versioncmd = "versionInfo.sh"
-		wasversion = "was"
-		versionpwd = "{0}/bin/".format(dest)
+
 
 	# Build the command to execute in order to get version information
-	if "liberty".lower() in offering.lower():
+	# Start by checking for specific product offering since some IBM products differ in 
+	# how to get version information.
+	if "com.ibm.websphere.liberty".lower() in offering.lower():
+		# Liberty uses productInfo to return version number of the product
 		if os.path.isfile("{0}/bin/productInfo".format(dest)):
 			versioncmd = "productInfo version"
 			wasversion = "liberty"
 			versionpwd = "{0}/bin/".format(dest)
-
-	# If offering is Java
-	if "java".lower() in offering.lower():
+			installed = True
+	elif "com.ibm.websphere.IBMJAVA".lower() in offering.lower():
+		# Java is version is retrieved the by simple java -version
 		for d in os.listdir("{0}/".format(dest)):
 			match = re.search("(java_.*)", d)
 			if match:
@@ -128,6 +127,14 @@ def getVersion(dest, offering):
 						versioncmd = "java -version"
 						wasversion = "java"	
 						versionpwd = "{0}/{1}/bin/".format(dest, d)
+						installed = True
+	else:
+		# If none above is true then lets assume that the desired product is a WAS specific product
+		if os.path.isfile("{0}/bin/versionInfo.sh".format(dest)):
+			versioncmd = "versionInfo.sh"
+			wasversion = "was"
+			versionpwd = "{0}/bin/".format(dest)
+			installed = True
 
 	child = subprocess.Popen(
 		["{0}/{1}".format(versionpwd, versioncmd)],
@@ -138,9 +145,6 @@ def getVersion(dest, offering):
 
 	stdout_value, stderr_value = child.communicate()
 		
-	if child.returncode != 0:
-		installed = False
-
 	was_dict["check_stdout"] = stdout_value
 	was_dict["check_stderr"] = stderr_value
 
