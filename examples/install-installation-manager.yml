@@ -1,0 +1,25 @@
+#
+# Downloads Installation Manager from an URL and installs it at a default location.
+#
+
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Download installer zip
+      get_url:
+        url: http://masp-repo.volvocars.biz/~ibmrepo/im/linux/agent.installer.linux.x86_64-latest.zip
+        dest: /tmp/
+
+    - name: Create IM directory
+      file:
+        state: directory
+        path: /tmp/im
+
+    - name: Unarchive installer zip
+      unarchive:
+        src: /tmp/agent.installer.linux.x86_64-latest.zip
+        dest: /tmp/im/
+
+    - name: Install Installation Manager
+      ibmim:
+        src: /tmp/im/

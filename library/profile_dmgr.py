@@ -35,6 +35,10 @@ options:
     required: false
     description:
       - Deployment manager host name
+  node_name:
+    required: false
+    description:
+      - Deployment manager node name
   password:
     required: false
     description:
