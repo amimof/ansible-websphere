@@ -33,7 +33,7 @@ author: "Amir Mofasser (@amofasser)"
 """
 
 EXAMPLES = """
-- name: Install:
+- name: Install
 	ibmim: 
 		state: present 
 		src: /some/dir/install/

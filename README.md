@@ -51,6 +51,10 @@ This module installs, uninstalls or updates IBM packages from local or remote re
 | im_shared | false | N/A | N/A | Path to Installation Manager shared resources folder |
 | repo | false | N/A | N/A | Comma separated list of URLs or paths to installation repositories used by Installation Manager |
 | id | true | N/A | N/A | ID of the package which you want to install |
+| repositories | false | N/A | N/A | Comma separated list of repositories to use. May be a path, URL or both |
+| properties | false | N/A | N/A | Comma separated list of properties needed for package installation. In the format key1=value,key2=value |
+| install_fixes | false | none | N/A | Install fixes if available in the repositories |
+| connect_passport_advantage | false | N/A | N/A | Append the PassportAdvantage repository to the repository list |
 
 #### Example
 ```yaml

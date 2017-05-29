@@ -35,7 +35,10 @@ options:
 		description: Path to Installation Manager shared resources folder
   repositories:
 		required: false
-		description: Comma separated list of repositories to use. May be a path, URL or both
+		description: Comma separated list of repositories to use. May be a path, URL or both.
+	properties:
+		required: false
+		description: Comma separated list of properties needed for package installation. In the format key1=value,key2=value
   state:
 		required: false
 		choices: [ present, absent, update ]
