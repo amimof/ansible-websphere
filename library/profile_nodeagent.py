@@ -1,10 +1,8 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+# Copyright (c) 2015 Amir Mofasser <amir.mofasser@gmail.com> (@amimof)
 
-#
-# Author: Amir Mofasser <amir.mofasser@gmail.com>
-#
-# This is an Ansible module. Installs/Uninstall IBM Installation Manager
-#
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 DOCUMENTATION = """
 module: profile_dmgr

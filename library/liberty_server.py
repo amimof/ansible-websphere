@@ -1,13 +1,8 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+# Copyright (c) 2015 Amir Mofasser <amir.mofasser@gmail.com> (@amimof)
 
-#
-# Author: Amir Mofasser <amir.mofasser@gmail.com>
-#
-# This is an Ansible module. Start/Stop a liberty server
-#
-# $LIBERTY_SERVER_DIR/server stop <server_name>
-# $LIBERTY_SERVER_DIR/server start <server_name>
-#
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 import os
 import subprocess
