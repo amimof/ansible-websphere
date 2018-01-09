@@ -14,7 +14,7 @@ module: ibmim
 short_description: Manage IBM Installation Manager packages
 description: 
 	- This module can Install, Uninstall and Update IBM Installation Manager packages on a supported Linux distribution.
-	-	This module relies on 'imcl', the binary command line tool which manages IM packages. You may use this module to install Installation Manager itself.
+	-	This module relies on 'imcl', the binary command line installed by the IM installer. You may use this module to install Installation Manager itself.
 version_added: "1.9.4"
 author: Amir Mofasser (@github)
 requirements:
@@ -22,36 +22,28 @@ requirements:
   - Installation files on remote server or local directory
 options:
   id:
-		required: false
 		description: The ID of the package which is to be installed
 		aliases:
 			- name
   ibmim:
-		required: false
 		default: /opt/IBM/InstallationManager
 		description: Path to installation directory of Installation Manager
   dest:
-		required: false
 		description: Path to destination installation directory
   im_shared:
-		required: false
 		description: Path to Installation Manager shared resources folder
   repositories:
-		required: false
 		description: A list of repositories to use. May be a path, URL or both.
 		type: list
 		aliases:
 			- repos
 	preferences:
-		required: false
 		type: list
 		description: Specify a preference value or a comma-delimited list of preference values to be used
 	properties:
-		required: false
 		type: list
 		description: Specify a preference value or a comma-delimited list of properties values to be used
   state:
-		required: false
 		choices: 
 			- present
 			-	absent
@@ -59,7 +51,6 @@ options:
 		default: present
 		description: Install a package with 'present'. Uninstall a package with 'absent'. Update all packages with 'latest'.
 	install_fixes:
-		required: false
 		choices: 
 			- none
 			-	recommended
@@ -67,12 +58,10 @@ options:
 		default: none
 		description: Install fixes if available in the repositories. 
 	connect_passport_advantage:
-		required: false
 		default: false
 		type: bool
 		description: Append the PassportAdvantage repository to the repository list
 	log:
-		required: false
 		description: Specify a log file that records the result of Installation Manager operations.
 '''
 
