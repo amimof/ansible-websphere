@@ -1,16 +1,8 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+# Copyright (c) 2015 Amir Mofasser <amir.mofasser@gmail.com> (@amimof)
 
-# Run a wsadmin script.
-#
-# DO NOT USE THIS MODULE. UNDER DEVELOPMENT
-#
-# wsadmin.sh -lang jython
-# -conntype SOAP
-# -host
-# -port
-# -username
-# -password
-# -f <jython_script> <arguments> ...
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 import os
 import subprocess

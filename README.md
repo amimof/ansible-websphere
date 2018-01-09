@@ -1,5 +1,12 @@
 # README
-A set of Ansible modules that lets you manage IBM packages
+A set of Ansible modules that lets you manage IBM packages and WebSphere resources
+
+## Getting started
+
+Copy the folder `library` in this repo to your playbook directory or to [`ANSIBLE_LIBRARY`](http://docs.ansible.com/ansible/latest/intro_configuration.html#library)
+```
+$ git clone https://github.com/amimof/ansible-websphere && cp -r ansible-websphere/library <directory>
+``` 
 
 ## Module Summary
 | Module | Description |
@@ -49,30 +56,31 @@ This module installs, uninstalls or updates IBM packages from local or remote re
 | ibmim | false | /opt/IBM/InstallationManager | N/A | Path to installation directory of Installation Manager |
 | dest | false | N/A | N/A | Path to destination installation directory |
 | im_shared | false | N/A | N/A | Path to Installation Manager shared resources folder |
-| repo | false | N/A | N/A | Comma separated list of URLs or paths to installation repositories used by Installation Manager |
 | id | true | N/A | N/A | ID of the package which you want to install |
 | repositories | false | N/A | N/A | Comma separated list of repositories to use. May be a path, URL or both |
 | properties | false | N/A | N/A | Comma separated list of properties needed for package installation. In the format key1=value,key2=value |
 | install_fixes | false | none | N/A | Install fixes if available in the repositories |
 | connect_passport_advantage | false | N/A | N/A | Append the PassportAdvantage repository to the repository list |
+| log | false | N/A | N/A | Specify a log file that records the result of Installation Manager operations. |
 
 #### Example
 ```yaml
 - name: Install WebSphere Application Server Liberty v8.5
   ibmim:
-    id: com.ibm.websphere.liberty.BASE.v85
-    repositories: /var/data/was
+    name: com.ibm.websphere.liberty.v85
+    repositories:
+			-	http://was-repos/
 
 - name: Uninstall WebSphere Application Server Liberty v8.5
-  ibmim:
-    id: com.ibm.websphere.liberty.BASE.v85
-    state: absent
+	ibmim:
+		name: com.ibm.websphere.liberty.v85
+		state: absent
 
 - name: Update all packages
-  ibmim:
-    id: null
-    state: update
-    repositories: /var/data/was
+	ibmim:
+		state: latest
+		repositories:
+			- http://was-repos/
 ```
 
 ### profile_dmgr.py
