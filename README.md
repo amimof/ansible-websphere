@@ -34,7 +34,7 @@ This module installs or uninstalls IBM Installation Manager.
 
 #### Example
 ```yaml
-- name: Install:
+- name: Install
   ibmim_installer: 
     state: present 
     src: /some/dir/install/
@@ -65,22 +65,22 @@ This module installs, uninstalls or updates IBM packages from local or remote re
 
 #### Example
 ```yaml
-- name: Install WebSphere Application Server Liberty v8.5
+- name: Install WebSphere Application Server Liberty v8
   ibmim:
     name: com.ibm.websphere.liberty.v85
     repositories:
-			-	http://was-repos/
+    - http://was-repos/
 
-- name: Uninstall WebSphere Application Server Liberty v8.5
-	ibmim:
-		name: com.ibm.websphere.liberty.v85
-		state: absent
+- name: Uninstall WebSphere Application Server Liberty v8
+  ibmim:
+    name: com.ibm.websphere.liberty.v85
+    state: absent
 
 - name: Update all packages
-	ibmim:
-		state: latest
-		repositories:
-			- http://was-repos/
+  ibmim:
+    state: latest
+    repositories:
+    - http://was-repos/
 ```
 
 ### profile_dmgr.py
