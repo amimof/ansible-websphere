@@ -37,7 +37,7 @@ def main():
         if child.returncode != 0:
             module.fail_json(msg="Failed executing wsadmin script: " + ¨script, stdout=stdout_value, stderr=stderr_value)
 
-        module.exit_json(changed=True, msg="Script executed successfully: " + scrpit, stdout=stdout_value)
+        module.exit_json(changed=True, msg="Script executed successfully: " + script, stdout=stdout_value)
 
 
 # import module snippets
