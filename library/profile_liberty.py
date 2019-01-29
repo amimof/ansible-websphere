@@ -12,7 +12,7 @@ def main():
     # Read arguments
     module = AnsibleModule(
         argument_spec = dict(
-            state   = dict(default='present', choices=['present', 'abcent']),
+            state   = dict(default='present', choices=['present', 'absent']),
             libertydir  = dict(required=True),
             name    = dict(required=True),
         )
@@ -36,7 +36,7 @@ def main():
         module.exit_json(changed=True, msg=name + " server created successfully", stdout=stdout_value)
 
     # Remove a profile
-    if state == 'abcent':
+    if state == 'absent':
         child = subprocess.Popen(["rm -rf " + libertydir+"/usr/servers/" + name], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout_value, stderr_value = child.communicate()
         if child.returncode != 0:
