@@ -31,6 +31,7 @@ This module installs or uninstalls IBM Installation Manager.
 | src | false | N/A | N/A | Path to installation files for Installation Manager |
 | dest | false | /opt/IBM/InstallationManager | N/A | Path to desired installation directory of Installation Manager |
 | logdir | false | N/A | /tmp | Directory to save installation log file |
+| accessRights | false | admin | admin, nonAdmin | Using a root or a user installation |
 
 #### Example
 ```yaml
@@ -44,6 +45,25 @@ This module installs or uninstalls IBM Installation Manager.
   ibmim_installer: 
     state: absent
     dest: /opt/IBM/InstallationManager
+##
+## Install IIM
+  - name: IBM Installation Manager installed
+    ibmim_installer:
+      state: present
+      src: /tmp/iimSrc/unpack
+      dest: ~/IBM/InstallationManager
+      accessRights: nonAdmin
+      logdir: /tmp
+    become_user: '{{ was_user }}'
+##
+## Un-Install IIM
+  - name: IBM Installation Manager un-installed
+    ibmim_installer:
+      state: absent
+      dest: ~/IBM/InstallationManager
+      accessRights: nonAdmin
+      logdir: /tmp
+    become_user: '{{ was_user }}'
 ```
 
 ### ibmim.py
