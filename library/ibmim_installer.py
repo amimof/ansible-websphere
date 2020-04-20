@@ -20,7 +20,7 @@ options:
     description: Path to desired installation directory of Installation Manager
   accessRights:
     required: false
-    default: "nonAdmin"
+    default: "admin"
     description: admin (root) or nonAdmin installation?
   logdir:
     required: false
