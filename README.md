@@ -72,7 +72,7 @@ This module installs, uninstalls or updates IBM packages from local or remote re
 #### Options
 | Parameter | Required | Default | Choices | Comments |
 |:---------|:--------|:---------|:---------|:---------|
-| state | false | present | present, absent | present=install,absent=uninstall or update |
+| state | false | present | present, absent, latest | present=install,absent=uninstall or latest=update |
 | ibmim | false | /opt/IBM/InstallationManager | N/A | Path to installation directory of Installation Manager |
 | dest | false | N/A | N/A | Path to destination installation directory |
 | im_shared | false | N/A | N/A | Path to Installation Manager shared resources folder |
