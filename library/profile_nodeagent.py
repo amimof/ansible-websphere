@@ -77,7 +77,7 @@ import platform
 import datetime
 import shutil
 
-def isProvisioned(dest, profileName): 
+def isProvisioned(dest, profileName):
     """
     Runs manageprofiles.sh -listProfiles command nd stores the output in a dict
     :param dest: WAS installation dir
@@ -94,8 +94,8 @@ def isProvisioned(dest, profileName):
             stderr=subprocess.PIPE
         )
         stdout_value, stderr_value = child.communicate()
-        
-        if profileName in stdout_value: 
+
+        if profileName in stdout_value:
             return True
     return False
 
@@ -114,7 +114,7 @@ def main():
             password = dict(required=False),
             dmgr_host = dict(required=False),
             dmgr_port = dict(required=False, default='8879'),
-            federate = dict(required=False, choices=BOOLEANS)
+            federate = dict(required=False, type='bool')
         )
     )
 
@@ -138,7 +138,7 @@ def main():
     if state == 'present':
         if module.check_mode:
             module.exit_json(
-                changed=False, 
+                changed=False,
                 msg="Profile {0} is to be created".format(name)
             )
 
@@ -164,8 +164,8 @@ def main():
                 shutil.rmtree("{0}/profiles/{1}".format(wasdir, name), ignore_errors=False, onerror=None)
 
                 module.fail_json(
-                    msg="Profile {0} creation failed".format(name), 
-                    stdout=stdout_value, 
+                    msg="Profile {0} creation failed".format(name),
+                    stdout=stdout_value,
                     stderr=stderr_value
                 )
 
@@ -176,15 +176,15 @@ def main():
                     "-conntype SOAP "
                     "-username {3} "
                     "-password {4} "
-                    "-profileName {5} ".format(wasdir, dmgr_host, dmgr_port, username, password, name)], 
-                    shell=True, 
-                    stdout=subprocess.PIPE, 
+                    "-profileName {5} ".format(wasdir, dmgr_host, dmgr_port, username, password, name)],
+                    shell=True,
+                    stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE
                 )
                 stdout_value, stderr_value = child.communicate()
                 if child.returncode != 0:
                     module.fail_json(
-                        msg="Profile {0} federation failed".format(name), 
+                        msg="Profile {0} federation failed".format(name),
                         stdout=stdout_value,
                         stderr=stderr_value
                     )
@@ -205,7 +205,7 @@ def main():
     if state == 'absent':
         if module.check_mode:
             module.exit_json(
-                changed=False, 
+                changed=False,
                 msg="Profile {0} is to be removed".format(name)
             )
 
@@ -213,9 +213,9 @@ def main():
 
             child = subprocess.Popen([
                 "{0}/bin/manageprofiles.sh -delete "
-                "-profileName {1} ".format(wasdir, name)], 
-                shell=True, 
-                stdout=subprocess.PIPE, 
+                "-profileName {1} ".format(wasdir, name)],
+                shell=True,
+                stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
 
@@ -228,14 +228,14 @@ def main():
                     shutil.rmtree(wasdir+"/profiles/"+name, ignore_errors=False, onerror=None)
                 else:
                     module.fail_json(
-                        msg="Profile {0} removal failed".format(name), 
-                        stdout=stdout_value, 
+                        msg="Profile {0} removal failed".format(name),
+                        stdout=stdout_value,
                         stderr=stderr_value
                     )
 
             module.exit_json(
-                changed=True, 
-                msg="Profile {0} removed successfully".format(name), 
+                changed=True,
+                msg="Profile {0} removed successfully".format(name),
                 stdout=stdout_value,
                 stderr=stderr_value
             )
