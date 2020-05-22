@@ -114,7 +114,7 @@ def main():
             password = dict(required=False),
             dmgr_host = dict(required=False),
             dmgr_port = dict(required=False, default='8879'),
-            federate = dict(required=False, choices=BOOLEANS)
+            federate = dict(required=False, type='bool', default=False)
         )
     )
 
