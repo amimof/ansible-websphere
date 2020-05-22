@@ -12,7 +12,7 @@ DOCUMENTATION = '''
 ---
 module: ibmim
 short_description: Manage IBM Installation Manager packages
-description:
+description: 
 	- This module can Install, Uninstall and Update IBM Installation Manager packages on a supported Linux distribution.
 	-	This module relies on 'imcl', the binary command line installed by the IM installer. You may use this module to install Installation Manager itself.
 version_added: "1.9.4"
@@ -44,19 +44,19 @@ options:
 		type: list
 		description: Specify a preference value or a comma-delimited list of properties values to be used
   state:
-		choices:
+		choices: 
 			- present
 			-	absent
 			- latest
 		default: present
 		description: Install a package with 'present'. Uninstall a package with 'absent'. Update all packages with 'latest'.
 	install_fixes:
-		choices:
+		choices: 
 			- none
 			-	recommended
 			-	all
 		default: none
-		description: Install fixes if available in the repositories.
+		description: Install fixes if available in the repositories. 
 	connect_passport_advantage:
 		default: false
 		type: bool
@@ -120,7 +120,7 @@ class InstallationManager():
 
 				# Package ID
 				id  												= dict(required=False, aliases=['name']),
-
+				
 				# -installationDirectory
 				dest      									= dict(required=False),
 
@@ -135,10 +135,10 @@ class InstallationManager():
 
 				# -properties
 				properties  								= dict(required=False, type='list'),
-
+				
 				# -connectPassportAdvantage
 				connect_passport_advantage 	= dict(default=False, type='bool'),
-
+				
 				# -installFixes
 				install_fixes 							= dict(default='none', choices=['none', 'recommended', 'all']),
 
@@ -181,7 +181,7 @@ class InstallationManager():
 		)
 
 		stdout_value, stderr_value = child.communicate()
-
+			
 		# Store stdout and stderr
 		self.module_facts["stdout"] = stdout_value
 		self.module_facts["stderr"] = stderr_value
@@ -190,24 +190,17 @@ class InstallationManager():
 			self.module.fail_json(
 				msg="Error getting installed version of package '{0}'".format(packageId),
 				stdout=stdout_value
-			)
+			)		
 
-		packagesplit = packageId.split(", ")
-		installedItems = 0
-		for packageId in packagesplit:
-			self.module_facts[packageId] = {}
-			for line in stdout_value.split(os.linesep):
-				if packageId in line:
-					linesplit = line.split(" : ")
-					self.module_facts[packageId]["installed"] = True
-					self.module_facts[packageId]["path"] = linesplit[0]
-					self.module_facts[packageId]["id"] = linesplit[1]
-					self.module_facts[packageId]["name"] = linesplit[2]
-					self.module_facts[packageId]["version"] = linesplit[3]
-					installedItems += 1
-					break
-
-		self.module_facts["installed"] = True if installedItems == len(packagesplit) else False
+		for line in stdout_value.split(os.linesep):
+			if packageId in line:
+				linesplit = line.split(" : ")
+				self.module_facts["installed"] = True
+				self.module_facts["path"] = linesplit[0]
+				self.module_facts["id"] = linesplit[1]
+				self.module_facts["name"] = linesplit[2]
+				self.module_facts["version"] = linesplit[3]
+				break
 
 		return self.module_facts
 
@@ -234,9 +227,9 @@ class InstallationManager():
 			cmd = "{0} -installationDirectory {1} ".format(cmd, module_params['dest'])
 		if module_params['im_shared']:
 			cmd = "{0} -sharedResourcesDirectory {1} ".format(cmd, module_params['im_shared'])
-		if module_params['properties']:
+		if module_params['properties']: 
 			cmd = "{0} -properties {1} ".format(cmd, ",".join(module_params['properties']))
-		if module_params['preferences']:
+		if module_params['preferences']: 
 			cmd = "{0} -preferences {1} ".format(cmd, ",".join(module_params['preferences']))
 		if module_params['install_fixes']:
 			cmd = "{0} -installFixes {1} ".format(cmd, module_params['install_fixes'])
@@ -246,9 +239,9 @@ class InstallationManager():
 			cmd = "{0} -log {1} ".format(cmd, module_params['log'])
 
 		child = subprocess.Popen(
-			[cmd],
-			shell=True,
-			stdout=subprocess.PIPE,
+			[cmd], 
+			shell=True, 
+			stdout=subprocess.PIPE, 
 			stderr=subprocess.PIPE
 		)
 
@@ -286,9 +279,9 @@ class InstallationManager():
 			cmd = "{0} -log {1} ".format(cmd, module_params['log'])
 
 		child = subprocess.Popen(
-			[cmd],
-			shell=True,
-			stdout=subprocess.PIPE,
+			[cmd], 
+			shell=True, 
+			stdout=subprocess.PIPE, 
 			stderr=subprocess.PIPE
 		)
 		stdout_value, stderr_value = child.communicate()
@@ -324,15 +317,15 @@ class InstallationManager():
 			cmd = "{0} -log {1} ".format(cmd, module_params['log'])
 
 		child = subprocess.Popen(
-			[cmd],
-			shell=True,
-			stdout=subprocess.PIPE,
+			[cmd], 
+			shell=True, 
+			stdout=subprocess.PIPE, 
 			stderr=subprocess.PIPE
 		)
 		stdout_value, stderr_value = child.communicate()
-
+		
 		if child.returncode != 0:
-			self.module.fail_json(msg="Failed updating packages", stdout=stdout_value, stderr=stderr_value)
+			self.module.fail_json(msg="Failed updating packages", stdout=stdout_value, stderr=stderr_value)		
 
 		self.module.exit_json(changed=True, msg="All packages updated", ansible_facts=self.module_facts)
 
@@ -342,11 +335,11 @@ class InstallationManager():
 		if not os.path.exists("{0}/eclipse".format(self.module.params['ibmim'])):
 			self.module.fail_json(
 				msg="IBM Installation Manager is not installed. Install it and try again.")
-
+		
 		# Install
 		if self.module.params['state'] == 'present':
 				self.install(self.module.params)
-
+				
 		# Uninstall
 		if self.module.params['state'] == 'absent':
 				self.uninstall(self.module.params)
