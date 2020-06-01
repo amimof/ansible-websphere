@@ -346,7 +346,7 @@ class InstallationManager():
 
 		# Update everything
 		if self.module.params['state'] == 'latest':
-				self.updateAll(self.module_params)
+				self.updateAll(self.module.params)
 
 # import module snippets
 if __name__ == '__main__':
