@@ -6,7 +6,7 @@ A set of Ansible modules that lets you manage IBM packages and WebSphere resourc
 Copy the folder `library` in this repo to your playbook directory or to [`ANSIBLE_LIBRARY`](http://docs.ansible.com/ansible/latest/intro_configuration.html#library)
 ```
 $ git clone https://github.com/amimof/ansible-websphere && cp -r ansible-websphere/library <directory>
-``` 
+```
 
 ## Module Summary
 | Module | Description |
@@ -36,13 +36,13 @@ This module installs or uninstalls IBM Installation Manager.
 #### Example
 ```yaml
 - name: Install
-  ibmim_installer: 
-    state: present 
+  ibmim_installer:
+    state: present
     src: /some/dir/install/
     logdir: /tmp/im_install.log
 
 - name: Uninstall
-  ibmim_installer: 
+  ibmim_installer:
     state: absent
     dest: /opt/IBM/InstallationManager
 ##
@@ -72,7 +72,7 @@ This module installs, uninstalls or updates IBM packages from local or remote re
 #### Options
 | Parameter | Required | Default | Choices | Comments |
 |:---------|:--------|:---------|:---------|:---------|
-| state | false | present | present, absent | present=install,absent=uninstall or update |
+| state | false | present | present, absent, latest | present=install,absent=uninstall or latest=update |
 | ibmim | false | /opt/IBM/InstallationManager | N/A | Path to installation directory of Installation Manager |
 | dest | false | N/A | N/A | Path to destination installation directory |
 | im_shared | false | N/A | N/A | Path to Installation Manager shared resources folder |
@@ -121,20 +121,20 @@ This module creates or removes a WebSphere Application Server Deployment Manager
 #### Example
 ```yaml
 - name: Create
-  profile_dmgr: 
-    state: present 
-    wasdir: /usr/local/WebSphere/AppServer/ 
-    name: dmgr 
-    cell_name: devCell 
-    host_name: localhost 
-    node_name: devcell-dmgr 
-    username: admin 
+  profile_dmgr:
+    state: present
+    wasdir: /usr/local/WebSphere/AppServer/
+    name: dmgr
+    cell_name: devCell
+    host_name: localhost
+    node_name: devcell-dmgr
+    username: admin
     password: allyourbasearebelongtous
 
 - name: Remove
-  profile_dmgr: 
-    state: absent 
-    wasdir: /usr/local/WebSphere/AppServer/ 
+  profile_dmgr:
+    state: absent
+    wasdir: /usr/local/WebSphere/AppServer/
     name: dmgr
 ```
 
@@ -159,27 +159,27 @@ This module creates or removes a WebSphere Application Server Node Agent profile
 #### Example
 ```yaml
 - name: Create
-  profile_nodeagent: 
-    state: present 
-    wasdir: /usr/local/WebSphere/AppServer/ 
-    name: nodeagent 
-    cell_name: devCellTmp 
-    host_name: localhost 
-    node_name: devcell-node1 
-    username: admin 
-    password: allyourbasearebelongtous 
-    dmgr_host: localhost 
-    dmgr_port: 8879 
+  profile_nodeagent:
+    state: present
+    wasdir: /usr/local/WebSphere/AppServer/
+    name: nodeagent
+    cell_name: devCellTmp
+    host_name: localhost
+    node_name: devcell-node1
+    username: admin
+    password: allyourbasearebelongtous
+    dmgr_host: localhost
+    dmgr_port: 8879
     federate: true
 
 - name: Remove
-  profile_dmgr: 
-    state: absent 
-    wasdir: /usr/local/WebSphere/AppServer/ 
+  profile_dmgr:
+    state: absent
+    wasdir: /usr/local/WebSphere/AppServer/
     name: nodeagent
 ```
 
-### server.py
+### was_server.py
 This module start or stops a WebSphere Application Server
 
 #### Options
@@ -194,15 +194,15 @@ This module start or stops a WebSphere Application Server
 #### Example
 ```yaml
 - name: Start
-  server: 
-    state: started 
-    wasdir: /usr/local/WebSphere/AppServer/ 
+  was_server:
+    state: started
+    wasdir: /usr/local/WebSphere/AppServer/
     name: my-server-01
 
 - name: Stop
-  server: 
-    state: stopped 
-    wasdir: /usr/local/WebSphere/AppServer/ 
+  was_server:
+    state: stopped
+    wasdir: /usr/local/WebSphere/AppServer/
     name: my-server-01
 ```
 
@@ -219,15 +219,15 @@ This module start or stops a Liberty Profile server
 #### Example
 ```yaml
 - name: Start
-  liberty_server: 
-    state: started 
-    libertydir: /usr/local/WebSphere/Liberty/ 
+  liberty_server:
+    state: started
+    libertydir: /usr/local/WebSphere/Liberty/
     name: my-server-01
 
 - name: Stop
-  liberty_server: 
-    state: stopped 
-    libertydir: /usr/local/WebSphere/Liberty/ 
+  liberty_server:
+    state: stopped
+    libertydir: /usr/local/WebSphere/Liberty/
     name: my-server-01
 ```
 
@@ -244,14 +244,14 @@ This module creates or removes a Liberty Profile server runtime
 #### Example
 ```yaml
 - name: Create
-  profile_liberty: 
-    state: present 
-    libertydir: /usr/local/WebSphere/Liberty/ 
+  profile_liberty:
+    state: present
+    libertydir: /usr/local/WebSphere/Liberty/
     name: server01
 
 - name: Remove
-  profile_liberty: 
-    state: absent 
-    libertydir: /usr/local/WebSphere/Liberty/ 
+  profile_liberty:
+    state: absent
+    libertydir: /usr/local/WebSphere/Liberty/
     name: server01
 ```
