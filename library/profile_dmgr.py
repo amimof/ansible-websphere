@@ -51,12 +51,20 @@ options:
     default: "present"
     description:
       - The profile should be created or removed
+  template:
+    required: false
+    choices: [ management, default ]
+    default: "management"
+    description:
+      - The profile name which should be used (management = dmgr, default = base)
 author: "Amir Mofasser (@amofasser)"
 """
 
 EXAMPLES = """
 # Install:
 profile_dmgr: state=present wasdir=/usr/local/WebSphere name=dmgr cell_name=mycell host_name=dmgr.domain.com node_name=mycell-dmgr username=wasadmin password=waspass
+# Install (Base version):
+profile_dmgr: state=present wasdir=/usr/local/WebSphere name=dmgr cell_name=mycell host_name=dmgr.domain.com node_name=mycell-dmgr username=wasadmin password=waspass port=12000 profile=default
 # Uninstall
 profile_dmgr: state=absent wasdir=/usr/local/WebSphere name=dmgr
 """
@@ -102,7 +110,8 @@ def main():
             host_name = dict(required=False),
             node_name = dict(required=False),
             username = dict(required=False),
-            password = dict(required=False)
+            password = dict(required=False),
+            template = dict(default='management', choices=['management', 'default'])
         )
     )
 
@@ -114,6 +123,7 @@ def main():
     node_name = module.params['node_name']
     username = module.params['username']
     password = module.params['password']
+    template = module.params['template']
 
     # Check if paths are valid
     if not os.path.exists(wasdir):
@@ -133,13 +143,13 @@ def main():
                 ["{0}/bin/manageprofiles.sh -create "
                 "-profileName {1} "
                 "-profilePath {0}/profiles/{1} "
-                "-templatePath {0}/profileTemplates/management "
+                "-templatePath {0}/profileTemplates/{8} "
                 "-cellName {2} "
                 "-hostName {3} "
                 "-nodeName {4} "
                 "-enableAdminSecurity true "
                 "-adminUserName {5} "
-                "-adminPassword {6} ".format(wasdir, name, cell_name, host_name, node_name, username, password)], 
+                "-adminPassword {6} ".format(wasdir, name, cell_name, host_name, node_name, username, password, template)], 
                 shell=True, 
                 stdout=subprocess.PIPE, 
                 stderr=subprocess.PIPE
