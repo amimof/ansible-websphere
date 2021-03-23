@@ -193,7 +193,6 @@ class InstallationManager():
 			)		
 
           	installedItems = 0
-		
 		packagesplit = packageId.split(", ")
 		for packageId in packagesplit:
 			self.module_facts[packageId] = {}
