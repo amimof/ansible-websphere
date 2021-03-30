@@ -192,16 +192,23 @@ class InstallationManager():
 				stdout=stdout_value
 			)		
 
-		for line in stdout_value.split(os.linesep):
-			if packageId in line:
-				linesplit = line.split(" : ")
-				self.module_facts["installed"] = True
-				self.module_facts["path"] = linesplit[0]
-				self.module_facts["id"] = linesplit[1]
-				self.module_facts["name"] = linesplit[2]
-				self.module_facts["version"] = linesplit[3]
-				break
+          	installedItems = 0
+		packagesplit = packageId.split(", ")
+		for packageId in packagesplit:
+			self.module_facts[packageId] = {}
+			for line in stdout_value.split(os.linesep):
+				if packageId in line:
+					linesplit = line.split(" : ")
+					self.module_facts[packageId]["installed"] = True
+					self.module_facts[packageId]["path"] = linesplit[0]
+					self.module_facts[packageId]["id"] = linesplit[1]
+					self.module_facts[packageId]["name"] = linesplit[2]
+					self.module_facts[packageId]["version"] = linesplit[3]
+					installedItems += 1
+					break
 
+		self.module_facts["installed"] = True if installedItems == len(packagesplit) else False
+		
 		return self.module_facts
 
 	def install(self, module_params):
