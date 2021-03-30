@@ -13,7 +13,7 @@ $ git clone https://github.com/amimof/ansible-websphere && cp -r ansible-websphe
 |:-------|:------------|
 | ibmim_installer.py | Installs and uninstalls IBM Installation Manager. |
 | ibmim.py | Manage IBM Installation Manager packages. Currently supports Install/Uninstall and Update packages. |
-| profile_dmgr.py | Creates or removes a WebSphere Application Server Deployment Manager profile. Requires a Network Deployment installation. |
+| profile_dmgr.py | Creates or removes a WebSphere Application Server Deployment Manager or Base profile. Requires a Network Deployment or Base installation. |
 | profile_nodeagent.py |Creates or removes a WebSphere Application Server Node Agent profile. Requires a Network Deployment installation. |
 | profile_liberty.py | Creates or removes a Liberty Profile server runtime |
 | server.py | Start or stops a WebSphere Application Server |
@@ -117,6 +117,7 @@ This module creates or removes a WebSphere Application Server Deployment Manager
 | node_name | true | N/A | N/A | Node name of this profile |
 | username | true | N/A | N/A | Administrative user name |
 | password | true | N/A | N/A | Administrative user password |
+| template | true | management | management,default | management=dmgr,default=base |
 
 #### Example
 ```yaml
