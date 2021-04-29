@@ -143,7 +143,7 @@ def main():
                 ["{0}/bin/manageprofiles.sh -create "
                 "-profileName {1} "
                 "-profilePath {0}/profiles/{1} "
-                "-templatePath {0}/profileTemplates/{8} "
+                "-templatePath {0}/profileTemplates/{7} "
                 "-cellName {2} "
                 "-hostName {3} "
                 "-nodeName {4} "
